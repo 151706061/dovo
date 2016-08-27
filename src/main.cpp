@@ -15,7 +15,6 @@
 
 #include <boost/thread.hpp>
 
-
 class MyApp: public wxApp
 {
 public:
@@ -52,21 +51,14 @@ BEGIN_EVENT_TABLE(MyApp, wxApp)
 	if(informUserOfUpdate(json.ToUTF8().data()))
 	{
 		// we need to exit...
-		// get update w/o threading
+		// get update w/o threading since no window is up anyways
 		updateChecker();
 		m_shouldExit = 1;
 		return true;
 	}
 
-	// check for update	for next run
+	// check for update	in background and save result for next run
 	updater = boost::thread(&updateChecker);
-
-
-	/*
-	Update notice, message
-	Exit notice, message
-
-	*/
 
 	RegisterCodecs();
 

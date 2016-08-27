@@ -4,31 +4,28 @@
 #include "alphanum.hpp"
 #include <set>
 #include <boost/filesystem.hpp>
-#include "sqlite3.h"
-
-typedef std::set<boost::filesystem::path, doj::alphanum_less<boost::filesystem::path> > naturalset;
+#include <boost/thread/mutex.hpp>
+#include "patientdata.h"
+#include "destinationentry.h"
 
 class DICOMSenderImpl;
 class DICOMSender
-{
+{	
+
 public:
-	DICOMSender();
-	~DICOMSender();	
+	DICOMSender(PatientData &patientdata);
+	~DICOMSender(void);
 
-	void Initialize(const std::string PatientName, std::string PatientID ,std::string BirthDay,
-		std::string NewPatientName, std::string NewPatientID ,std::string NewBirthDay,
-		std::string destinationHost, unsigned int destinationPort, std::string destinationAETitle, std::string ourAETitle);
-
-	void SetFileList(sqlite3 *db);
-	void SetFileList(const naturalset &files);
-
-	static void DoSendThread(void *obj);
-
+	void DoSendAsync(std::string PatientID, std::string PatientName, bool changeinfo, std::string NewPatientID, std::string NewPatientName, std::string NewBirthDay, DestinationEntry destination);	
+	void DoSend(std::string PatientID, std::string PatientName, bool changeinfo, std::string NewPatientID, std::string NewPatientName, std::string NewBirthDay, DestinationEntry destination);	
+	static bool Echo(DestinationEntry destination);
 	std::string ReadLog();
+	void WriteLog(const char *msg);
+	void WriteLog(std::string &msg);
 
 	void Cancel();
-	bool IsDone();	
-private:
+	bool IsDone();				
+protected:
 	DICOMSenderImpl *impl;
 };
 

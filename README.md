@@ -1,10 +1,12 @@
 # dovo
-Windows [![Build status](https://ci.appveyor.com/api/projects/status/w2w5js6jfi3hi8un/branch/master?svg=true)](https://ci.appveyor.com/project/DraconPern/dovo/branch/master) OS X [![Build Status](https://travis-ci.org/DraconPern/dovo.svg?branch=master)](https://travis-ci.org/DraconPern/dovo)
+Windows [![Build Status](http://home.draconpern.com:8080/buildStatus/icon?job=dovo.win32.release)](http://home.draconpern.com:8080/job/dovo.win32.release/) OS X [![Build Status](http://home.draconpern.com:8080/buildStatus/icon?job=dovo.osx.release)](http://home.draconpern.com:8080/job/dovo.osx.release/) Linux [![Build Status](http://home.draconpern.com:8080/buildStatus/icon?job=dovo.linux.debug)](http://home.draconpern.com:8080/job/dovo.linux.debug/)
 
 Point of care, cross-platform software for importing DICOM CD and files then sending it to PACS. Usage scenario is front desk staff getting handed a CD with patient's images.  This tool allows the front desk to preview the images, and send to PACS.  Tested on Windows and OS X.
 
 - Supports Group Policy for PACS destinations on Windows.
-- Available on Windows, OS X, and Linux
+- Supports Windows Vista and above including Windows 10
+- Supported on OS X
+- Works on Linux
 - Supports Unicode file and path.
 - Image preview
 - No dll's need to be distributed.

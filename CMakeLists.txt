@@ -2,9 +2,11 @@ cmake_minimum_required(VERSION 2.8)
 
 project(dovo)
 
-set(VERSION "1.0.5")
+set(VERSION 1.0.10)
 
 add_definitions(-DDOVO_VERSION="${VERSION}")
+
+set (CMAKE_CXX_STANDARD 11)
 
 if(WIN32)
 	#VC++ stuff
@@ -25,18 +27,20 @@ add_definitions(-DHAVE_SSIZE_T)
 find_package(wxWidgets COMPONENTS core base adv REQUIRED)
 include(${wxWidgets_USE_FILE})
 
-#enable dcmtk filename to have wide version, only affects WIN32.  http://utf8everywhere.org/
-add_definitions(-DDCMTK_WIDE_CHAR_FILE_IO_FUNCTIONS=1)
-find_package(dcmtk REQUIRED CONFIG HINTS ${DCMTK_DIR})
+if(WIN32)
+	#enable dcmtk filename to have wide version, only affects WIN32.  http://utf8everywhere.org/
+	add_definitions(-DDCMTK_WIDE_CHAR_FILE_IO_FUNCTIONS=1)
+endif(WIN32)
+find_package(DCMTK REQUIRED CONFIG HINTS ${DCMTK_DIR})
 
 #include zlib
-find_package(zlib REQUIRED ${ZLIB_ROOT})
+find_package(ZLIB REQUIRED ${ZLIB_ROOT})
 
 #include openjpeg
-find_package(openjpeg REQUIRED HINTS ${OPENJPEG})
+find_package(OpenJPEG REQUIRED HINTS ${OPENJPEG})
 add_definitions(-DOPJ_STATIC)
 
-#include fmjpeg2k
+#include fmjpeg2koj
 find_package(fmjpeg2k REQUIRED HINTS ${FMJPEG2K})
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/sqlite3 ${Boost_INCLUDE_DIRS} ${FMJPEG2K_INCLUDE_DIRS} ${DCMTK_INCLUDE_DIRS} ${VLD}/include)
@@ -51,8 +55,10 @@ set(dovo_HEADERS
 	src/dovo_searchStatus.h
 	src/dovo_sendStatus.h
 	src/dovo_changePatientInfo.h
+	src/dovo_updateCheck.h
 	sqlite3/sqlite3.h
 	src/engine.h
+	src/patientdata.h
 	src/destinationentry.h
 	src/dicomscanner.h
 	src/dicomsender.h
@@ -72,9 +78,11 @@ set(dovo_SRCS
 	src/dovo_searchStatus.cpp
 	src/dovo_sendStatus.cpp
 	src/dovo_changePatientInfo.cpp
+	src/dovo_updateCheck.cpp
 	sqlite3/sqlite3.c
 	sqlite3/sqlite3_exec_stmt.c
 	src/engine.cpp
+	src/patientdata.cpp
 	src/dicomscanner.cpp
 	src/dicomsender.cpp
 	src/dcm2img.cpp
@@ -82,24 +90,35 @@ set(dovo_SRCS
 )
 
 if(WIN32)
-  set(dovo_SRCS ${dovo_SRCS} src/win/dovo.rc)
-endif(WIN32)
+  set(dovo_SRCS ${dovo_SRCS} src/win/dovo.rc src/win/version.rc)
+
+  string(REPLACE "." "," VER_FILEVERSION ${VERSION})
+
+  add_definitions(-DVER_FILEVERSION=${VER_FILEVERSION})
+  add_definitions(-DVER_FILEVERSION_STR="${VERSION}")
+  add_definitions(-DVER_PRODUCTVERSION=${VER_FILEVERSION})
+  add_definitions(-DVER_PRODUCTVERSION_STR="${VERSION}")
+
+endif()
 
 if(APPLE)
-  set(dovo_SRCS ${dovo_SRCS} src/osx/dovo.icns)
-endif(APPLE)
+  set(dovo_SRCS ${dovo_SRCS} src/osx/dovo.icns src/osx/Info.plist.in)
+endif()
 
 ADD_EXECUTABLE(dovo WIN32 MACOSX_BUNDLE ${dovo_SRCS})
 
 IF(WIN32)
   SET(OS_SPECIFIC_LIBS netapi32 wsock32 odbc32 Rpcrt4)
-ELSE(WIN32)
-  SET(OS_SPECIFIC_LIBS )
-ENDIF(WIN32)
+ELSE()
+  IF(APPLE)
+  ELSE()
+    SET(OS_SPECIFIC_LIBS dl)
+  ENDIF()
+ENDIF()
 
 if(APPLE)
-  set_target_properties(dovo PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/src/osx/Info.plist)
-  set_target_properties(dovo PROPERTIES MACOSX_BUNDLE_ICON_FILE dovo)
+  set_target_properties(dovo PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/src/osx/Info.plist.in)
+  set_target_properties(dovo PROPERTIES MACOSX_BUNDLE_SHORT_VERSION_STRING ${VERSION})
 	SET_SOURCE_FILES_PROPERTIES(${CMAKE_SOURCE_DIR}/src/osx/dovo.icns PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 ENDIF()
 

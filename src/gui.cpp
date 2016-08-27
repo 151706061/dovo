@@ -144,6 +144,7 @@ destination::destination( wxWindow* parent, wxWindowID id, const wxString& title
 	m_destinationList->Connect( wxEVT_COMMAND_LIST_ITEM_SELECTED, wxListEventHandler( destination::OnSelect ), NULL, this );
 	m_add->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( destination::OnAdd ), NULL, this );
 	m_delete->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( destination::OnDelete ), NULL, this );
+	m_echo->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( destination::OnEcho ), NULL, this );
 	m_name->Connect( wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler( destination::OnNameText ), NULL, this );
 	m_destinationHost->Connect( wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler( destination::OnDestinationHostText ), NULL, this );
 	m_destinationPort->Connect( wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler( destination::OnDestinationPortText ), NULL, this );
@@ -160,6 +161,7 @@ destination::~destination()
 	m_destinationList->Disconnect( wxEVT_COMMAND_LIST_ITEM_SELECTED, wxListEventHandler( destination::OnSelect ), NULL, this );
 	m_add->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( destination::OnAdd ), NULL, this );
 	m_delete->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( destination::OnDelete ), NULL, this );
+	m_echo->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( destination::OnEcho ), NULL, this );
 	m_name->Disconnect( wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler( destination::OnNameText ), NULL, this );
 	m_destinationHost->Disconnect( wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler( destination::OnDestinationHostText ), NULL, this );
 	m_destinationPort->Disconnect( wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler( destination::OnDestinationPortText ), NULL, this );
@@ -173,7 +175,7 @@ mainFrame::mainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 {
 	this->SetSizeHints( wxSize( -1,-1 ), wxDefaultSize );
 	this->SetExtraStyle( wxWS_EX_VALIDATE_RECURSIVELY );
-	this->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_MENU ) );
+	this->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_BTNFACE ) );
 	
 	wxBoxSizer* bSizer14;
 	bSizer14 = new wxBoxSizer( wxHORIZONTAL );
@@ -298,7 +300,7 @@ mainFrame::mainFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	bSizer181->Add( m_exit, 0, wxALL|wxBOTTOM, 5 );
 	
 	
-	bSizer17->Add( bSizer181, 0, wxALIGN_BOTTOM|wxEXPAND, 5 );
+	bSizer17->Add( bSizer181, 0, wxEXPAND, 5 );
 	
 	
 	bSizer14->Add( bSizer17, 0, wxBOTTOM|wxEXPAND|wxRIGHT|wxTOP, 5 );
@@ -356,7 +358,7 @@ about::about( wxWindow* parent, wxWindowID id, const wxString& title, const wxPo
 	m_buildinfo->Wrap( -1 );
 	bSizer28->Add( m_buildinfo, 0, wxALL, 5 );
 	
-	m_copyright = new wxStaticText( this, wxID_ANY, _("Copyright (C) 2007-2015 Ing-Long Eric Kuo"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_copyright = new wxStaticText( this, wxID_ANY, _("Copyright (C) 2007-2016 Ing-Long Eric Kuo"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_copyright->Wrap( -1 );
 	bSizer28->Add( m_copyright, 0, wxALL, 5 );
 	
@@ -378,7 +380,7 @@ about::about( wxWindow* parent, wxWindowID id, const wxString& title, const wxPo
 	m_sdbSizer1->AddButton( m_sdbSizer1OK );
 	m_sdbSizer1->Realize();
 	
-	bSizer28->Add( m_sdbSizer1, 1, wxALIGN_BOTTOM|wxALL|wxEXPAND, 5 );
+	bSizer28->Add( m_sdbSizer1, 0, wxALL|wxEXPAND, 5 );
 	
 	
 	this->SetSizer( bSizer28 );
@@ -460,7 +462,7 @@ changePatientInfo::changePatientInfo( wxWindow* parent, wxWindowID id, const wxS
 	m_sdbSizer3->AddButton( m_sdbSizer3Cancel );
 	m_sdbSizer3->Realize();
 	
-	bSizer23->Add( m_sdbSizer3, 1, wxEXPAND, 5 );
+	bSizer23->Add( m_sdbSizer3, 0, wxALL|wxEXPAND, 5 );
 	
 	
 	this->SetSizer( bSizer23 );
@@ -533,7 +535,7 @@ searchStatus::searchStatus( wxWindow* parent, wxWindowID id, const wxString& tit
 	
 	m_progress = new wxGauge( this, wxID_ANY, 100, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL|wxGA_SMOOTH );
 	m_progress->SetValue( 0 ); 
-	bSizer28->Add( m_progress, 1, wxALIGN_CENTER_VERTICAL|wxBOTTOM|wxEXPAND|wxLEFT|wxTOP, 15 );
+	bSizer28->Add( m_progress, 1, wxBOTTOM|wxEXPAND|wxLEFT|wxTOP, 15 );
 	
 	m_stop = new wxButton( this, wxID_ANY, _("Stop"), wxDefaultPosition, wxDefaultSize, 0 );
 	bSizer28->Add( m_stop, 0, wxALIGN_CENTER_VERTICAL|wxALL, 15 );
@@ -553,5 +555,66 @@ searchStatus::~searchStatus()
 {
 	// Disconnect Events
 	m_stop->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( searchStatus::OnStop ), NULL, this );
+	
+}
+
+updateCheck::updateCheck( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
+{
+	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
+	
+	wxBoxSizer* bSizer28;
+	bSizer28 = new wxBoxSizer( wxVERTICAL );
+	
+	wxBoxSizer* bSizer29;
+	bSizer29 = new wxBoxSizer( wxVERTICAL );
+	
+	m_needtoupgrade = new wxStaticText( this, wxID_ANY, _("A new version of dovo is available:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_needtoupgrade->Wrap( -1 );
+	bSizer29->Add( m_needtoupgrade, 0, wxALL, 5 );
+	
+	m_remoteversion = new wxStaticText( this, wxID_ANY, _("x.x.x.x"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_remoteversion->Wrap( -1 );
+	bSizer29->Add( m_remoteversion, 0, wxALL, 5 );
+	
+	m_remotemessage = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY );
+	bSizer29->Add( m_remotemessage, 1, wxALL|wxEXPAND, 5 );
+	
+	wxBoxSizer* bSizer27;
+	bSizer27 = new wxBoxSizer( wxHORIZONTAL );
+	
+	m_staticText13 = new wxStaticText( this, wxID_ANY, _("Download at:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText13->Wrap( -1 );
+	bSizer27->Add( m_staticText13, 0, wxALL, 5 );
+	
+	m_hyperlink11 = new wxHyperlinkCtrl( this, wxID_ANY, wxEmptyString, wxT("http://www.draconpern.com/software/dovo"), wxDefaultPosition, wxDefaultSize, wxHL_DEFAULT_STYLE );
+	bSizer27->Add( m_hyperlink11, 0, wxALL, 5 );
+	
+	
+	bSizer29->Add( bSizer27, 0, wxEXPAND, 5 );
+	
+	
+	bSizer28->Add( bSizer29, 1, wxEXPAND, 5 );
+	
+	m_sdbSizer4 = new wxStdDialogButtonSizer();
+	m_sdbSizer4OK = new wxButton( this, wxID_OK );
+	m_sdbSizer4->AddButton( m_sdbSizer4OK );
+	m_sdbSizer4->Realize();
+	
+	bSizer28->Add( m_sdbSizer4, 0, wxALL|wxEXPAND, 5 );
+	
+	
+	this->SetSizer( bSizer28 );
+	this->Layout();
+	
+	this->Centre( wxBOTH );
+	
+	// Connect Events
+	this->Connect( wxEVT_INIT_DIALOG, wxInitDialogEventHandler( updateCheck::updateCheckOnInitDialog ) );
+}
+
+updateCheck::~updateCheck()
+{
+	// Disconnect Events
+	this->Disconnect( wxEVT_INIT_DIALOG, wxInitDialogEventHandler( updateCheck::updateCheckOnInitDialog ) );
 	
 }

@@ -68,6 +68,7 @@ class destination : public wxDialog
 		virtual void OnSelect( wxListEvent& event ) { event.Skip(); }
 		virtual void OnAdd( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnDelete( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnEcho( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnNameText( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnDestinationHostText( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnDestinationPortText( wxCommandEvent& event ) { event.Skip(); }
@@ -227,6 +228,33 @@ class searchStatus : public wxDialog
 		
 		searchStatus( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Searching..."), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxDEFAULT_DIALOG_STYLE ); 
 		~searchStatus();
+	
+};
+
+///////////////////////////////////////////////////////////////////////////////
+/// Class updateCheck
+///////////////////////////////////////////////////////////////////////////////
+class updateCheck : public wxDialog 
+{
+	private:
+	
+	protected:
+		wxStaticText* m_needtoupgrade;
+		wxStaticText* m_remoteversion;
+		wxTextCtrl* m_remotemessage;
+		wxStaticText* m_staticText13;
+		wxHyperlinkCtrl* m_hyperlink11;
+		wxStdDialogButtonSizer* m_sdbSizer4;
+		wxButton* m_sdbSizer4OK;
+		
+		// Virtual event handlers, overide them in your derived class
+		virtual void updateCheckOnInitDialog( wxInitDialogEvent& event ) { event.Skip(); }
+		
+	
+	public:
+		
+		updateCheck( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Update Check"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 480,300 ), long style = wxDEFAULT_DIALOG_STYLE ); 
+		~updateCheck();
 	
 };
 
