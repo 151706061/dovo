@@ -12,9 +12,17 @@ BUILD_DIR=`pwd`
 DEVSPACE=`pwd`
 unamestr=`uname`
 
+if [ "$2" == "localgit" ]
+then
+  githuburl="http://gitcache:8080/github.com"
+else
+  githuburl="https://github.com"
+fi
+
+
 if [ "$unamestr" == 'Darwin' ] ; then
 cd $DEVSPACE
-[[ -d openssl ]] || git clone https://github.com/openssl/openssl.git --branch OpenSSL_1_1_1-stable --single-branch --depth 1
+[[ -d openssl ]] || git clone $githuburl/openssl/openssl.git --branch OpenSSL_1_1_1-stable --single-branch --depth 1
 cd openssl
 git pull
 ./Configure darwin64-x86_64-cc  --prefix=$DEVSPACE/openssl/$TYPE --openssldir=$DEVSPACE/openssl/$TYPE/openssl no-shared
@@ -24,7 +32,7 @@ export OPENSSL_ROOT_DIR=$DEVSPACE/openssl/$TYPE
 fi
 
 cd $DEVSPACE
-[[ -d dcmtk ]] || git clone --branch=DCMTK-3.6.5 https://github.com/DCMTK/dcmtk.git
+[[ -d dcmtk ]] || git clone --branch=DCMTK-3.6.5 $githuburl/DCMTK/dcmtk.git
 cd dcmtk
 mkdir -p build-$TYPE
 cd build-$TYPE
@@ -32,7 +40,7 @@ cmake .. -DCMAKE_BUILD_TYPE=$TYPE -DDCMTK_ENABLE_CXX11=ON -DDCMTK_ENABLE_STL=ON 
 make -j8 install
 
 cd $DEVSPACE
-[[ -d openjpeg ]] || git clone --branch=v2.4.0 --single-branch --depth 1 https://github.com/uclouvain/openjpeg.git
+[[ -d openjpeg ]] || git clone --branch=v2.4.0 --single-branch --depth 1 $githuburl/uclouvain/openjpeg.git
 cd openjpeg
 mkdir -p build-$TYPE
 cd build-$TYPE
@@ -40,7 +48,7 @@ cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=$TYPE -DCMAKE_INSTALL_PREFIX
 make -j8 install
 
 cd $DEVSPACE
-[[ -d fmjpeg2koj ]] || git clone --branch=master https://github.com/DraconPern/fmjpeg2koj.git
+[[ -d fmjpeg2koj ]] || git clone --branch=master $githuburl/DraconPern/fmjpeg2koj.git
 cd fmjpeg2koj
 mkdir -p build-$TYPE
 cd build-$TYPE
@@ -48,7 +56,7 @@ cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=$TYPE -DOpenJPEG_ROOT=$DEVSP
 make -j8 install
 
 cd $DEVSPACE
-[[ -d boost ]] || git clone --branch=boost-1.81.0 --recurse-submodules https://github.com/boostorg/boost.git
+[[ -d boost ]] || git clone --branch=boost-1.81.0 --recurse-submodules $githuburl/boostorg/boost.git
 cd boost
 ./bootstrap.sh
 COMMONb2Flag="-j 4 link=static stage"
@@ -60,7 +68,7 @@ elif [ "$TYPE" = "Debug" ] ; then
 fi
 
 cd $DEVSPACE
-[[ -d wxWidgets ]] || git clone --branch=master --recurse-submodules https://github.com/wxWidgets/wxWidgets.git
+[[ -d wxWidgets ]] || git clone --branch=master --recurse-submodules $githuburl/wxWidgets/wxWidgets.git
 cd wxWidgets
 mkdir -p build$TYPE
 cd build$TYPE
