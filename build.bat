@@ -4,6 +4,12 @@ SET TYPE=Release
 SET TYPE=Debug
 )
 
+IF "%2"=="localgit" (
+SET GITHUBURL=http://gitcache:8080/github.com
+) ELSE (
+SET GITHUBURL=https://github.com
+)
+
 SET BUILD_DIR=%CD%
 SET DEVSPACE=%CD%
 SET CL=/MP
@@ -14,7 +20,7 @@ SET OPENSSLFLAG=VC-WIN64A
 SET BOOSTADDRESSMODEL=address-model=64
 
 cd %DEVSPACE%
-git clone --branch=master --single-branch --depth=1 https://github.com/madler/zlib.git
+git clone --branch=master --single-branch --depth=1 %GITHUBURL%/madler/zlib.git
 cd zlib
 mkdir build-%TYPE%
 cd build-%TYPE%
@@ -25,7 +31,7 @@ IF "%TYPE%" == "Release" copy /Y %DEVSPACE%\zlib\Release\lib\zlibstatic.lib %DEV
 IF "%TYPE%" == "Debug"   copy /Y %DEVSPACE%\zlib\Debug\lib\zlibstaticd.lib %DEVSPACE%\zlib\Debug\lib\zlib_d.lib
 
 cd %DEVSPACE%
-git clone https://github.com/DraconPern/libiconv-cmake.git
+git clone %GITHUBURL%/DraconPern/libiconv-cmake.git
 cd libiconv-cmake
 mkdir build-%TYPE%
 cd build-%TYPE%
@@ -40,7 +46,7 @@ if DEFINED FORCEBUILD goto buildssl
 if EXIST "%DEVSPACE%\openssl\%TYPE%\lib\libcrypto.lib" goto dontbuildssl
 :buildssl
 cd %DEVSPACE%
-git clone https://github.com/openssl/openssl.git --branch OpenSSL_1_1_1-stable --single-branch --depth 1
+git clone %GITHUBURL%/openssl/openssl.git --branch OpenSSL_1_1_1-stable --single-branch --depth 1
 cd openssl
 SET OLDPATH=%PATH%
 IF "%TYPE%" == "Release" perl Configure -D_CRT_SECURE_NO_WARNINGS=1 no-asm no-shared --openssldir=%DEVSPACE%\openssl\Release --prefix=%DEVSPACE%\openssl\Release %OPENSSLFLAG%
@@ -51,7 +57,7 @@ SET PATH=%OLDPATH%
 SET OPENSSL_ROOT_DIR=%DEVSPACE%\openssl\%TYPE%
 
 cd %DEVSPACE%
-git clone --branch=DCMTK-3.6.5 https://github.com/DCMTK/dcmtk.git
+git clone --branch=DCMTK-3.6.5 %GITHUBURL%/DCMTK/dcmtk.git
 cd dcmtk
 mkdir build-%TYPE%
 cd build-%TYPE%
@@ -60,7 +66,7 @@ msbuild /P:Configuration=%TYPE% INSTALL.vcxproj
 if ERRORLEVEL 1 exit /B %ERRORLEVEL%
 
 cd %DEVSPACE%
-git clone --branch=v2.4.0 --single-branch --depth 1 https://github.com/uclouvain/openjpeg.git
+git clone --branch=v2.4.0 --single-branch --depth 1 %GITHUBURL%/uclouvain/openjpeg.git
 cd openjpeg
 mkdir build-%TYPE%
 cd build-%TYPE%
@@ -69,7 +75,7 @@ msbuild /P:Configuration=%TYPE% INSTALL.vcxproj
 if ERRORLEVEL 1 exit /B %ERRORLEVEL%
 
 cd %DEVSPACE%
-git clone --branch=master https://github.com/DraconPern/fmjpeg2koj.git
+git clone --branch=master %GITHUBURL%/DraconPern/fmjpeg2koj.git
 cd fmjpeg2koj
 mkdir build-%TYPE%
 cd build-%TYPE%
@@ -78,7 +84,7 @@ msbuild /P:Configuration=%TYPE% INSTALL.vcxproj
 if ERRORLEVEL 1 exit /B %ERRORLEVEL%
 
 cd %DEVSPACE%
-git clone --branch=boost-1.81.0 --recurse-submodules https://github.com/boostorg/boost.git
+git clone --branch=boost-1.81.0 --recurse-submodules %GITHUBURL%/boostorg/boost.git
 cd boost
 call bootstrap
 SET COMMONb2Flag=%BOOSTTOOLSET% %BOOSTADDRESSMODEL% runtime-link=static define=_BIND_TO_CURRENT_VCLIBS_VERSION=1 -j 4 stage
@@ -87,7 +93,7 @@ IF "%TYPE%" == "Release" b2 %COMMONb2Flag% %BOOSTmodules% release
 IF "%TYPE%" == "Debug"   b2 %COMMONb2Flag% %BOOSTmodules% debug
 
 cd %DEVSPACE%
-git clone --branch=3.2.2-hotfix --recurse-submodule https://github.com/wxWidgets/wxWidgets.git
+git clone --branch=3.2.2-hotfix --recurse-submodule %GITHUBURL%/wxWidgets/wxWidgets.git
 cd wxWidgets
 mkdir build-%TYPE%
 cd build-%TYPE%

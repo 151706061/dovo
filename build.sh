@@ -8,9 +8,6 @@ else
   TYPE=Debug
 fi
 
-BUILD_DIR=`pwd`
-DEVSPACE=`pwd`
-unamestr=`uname`
 
 if [ "$2" == "localgit" ]
 then
@@ -19,6 +16,9 @@ else
   githuburl="https://github.com"
 fi
 
+BUILD_DIR=`pwd`
+DEVSPACE=`pwd`
+unamestr=`uname`
 
 if [ "$unamestr" == 'Darwin' ] ; then
 cd $DEVSPACE
