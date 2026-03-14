@@ -26,27 +26,28 @@ set(Boost_USE_MULTITHREADED      ON)
 if(WIN32 OR APPLE)
 set(Boost_USE_STATIC_RUNTIME     ON)
 endif()
-find_package(Boost REQUIRED thread filesystem system regex date_time)
+find_package(Boost CONFIG 1.88.0 COMPONENTS headers thread filesystem system regex date_time locale)
 
 if(WIN32)
 	#enable dcmtk filename to have wide version, only affects WIN32.  http://utf8everywhere.org/
 	add_definitions(-DDCMTK_WIDE_CHAR_FILE_IO_FUNCTIONS=1)
 endif()
-find_package(DCMTK REQUIRED)
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/dcmtk")
+find_package(DCMTK REQUIRED CONFIG)
 
 #include zlib
-find_package(ZLIB REQUIRED ${ZLIB_ROOT})
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/zlib")
+find_package(ZLIB REQUIRED)
 
 #include openjpeg
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/openjpeg/Release/lib/openjpeg-2.4")
 find_package(OpenJPEG REQUIRED)
 add_definitions(-DOPJ_STATIC)
 
 #include fmjpeg2koj
 find_package(fmjpeg2k REQUIRED)
 
-set (OPENSSL_USE_STATIC_LIBS TRUE)
-set (OPENSSL_MSVC_STATIC_RT TRUE)
-find_package(OpenSSL REQUIRED)
+find_package(OpenSSL CONFIG)
 
 set(wxWidgets_USE_STATIC   ON)
 #define this so that wxWidgets doesn't define it. Conflicts w/ dcmtk's declaration

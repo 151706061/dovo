@@ -1,6 +1,10 @@
 #include "fetch.h"
 
+#ifdef _WIN32
+#include <wintls.hpp>
+#else
 #include <boost/beast/ssl.hpp>
+#endif
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 
@@ -53,35 +57,15 @@ std::string fetch_string(std::string uri, const FetchOptions& options)
 	// Try each endpoint until we successfully establish a connection.
 	if (protocol == "https")
 	{
+#if defined(_WIN32)
+		wintls::context ssl_context{ wintls::method::system_default };
+		wintls::stream<boost::asio::ip::tcp::socket> socket(io_context, ssl_context);
+		boost::asio::connect(socket.next_layer(), endpoint);
+		socket.handshake(wintls::handshake_type::client);
+#else
 		boost::asio::ssl::context ssl_context(boost::asio::ssl::context::tlsv12_client);
 		ssl_context.set_verify_mode(boost::asio::ssl::verify_peer);
-#ifdef _WIN32
-		// use windows cert store for openssl
-		HCERTSTORE hStore;
-		PCCERT_CONTEXT pContext = NULL;
-		X509* x509;
-		X509_STORE* store = SSL_CTX_get_cert_store(ssl_context.native_handle());
-
-		hStore = CertOpenSystemStore(NULL, L"ROOT");
-
-		if (hStore)
-		{
-			while (pContext = CertEnumCertificatesInStore(hStore, pContext))
-			{
-				x509 = NULL;
-				const unsigned char* encoded_cert = pContext->pbCertEncoded;
-				x509 = d2i_X509(NULL, (const unsigned char**)&encoded_cert, pContext->cbCertEncoded);
-				if (x509)
-				{					
-					int i = X509_STORE_add_cert(store, x509);
-					X509_free(x509);
-				}
-			}
-
-			CertFreeCertificateContext(pContext);
-			CertCloseStore(hStore, 0);
-		}
-#elif defined(__APPLE__)
+#if defined(__APPLE__)
 		CFMutableDictionaryRef search;
 		CFArrayRef result;
 		SecKeychainRef keychain;
@@ -133,6 +117,7 @@ std::string fetch_string(std::string uri, const FetchOptions& options)
 		}
 		boost::beast::get_lowest_layer(socket).connect(endpoint);
 		socket.handshake(boost::asio::ssl::stream_base::client);
+#endif
 		http::write(socket, req);
 		http::read(socket, buffer, res);
 		boost::system::error_code ec;
@@ -219,35 +204,15 @@ bool fetch_file(boost::filesystem::path outputpath, std::string uri, const Fetch
 	// Try each endpoint until we successfully establish a connection.
 	if (protocol == "https")
 	{
+#if defined(_WIN32)
+		wintls::context ssl_context{ wintls::method::system_default };
+		wintls::stream<boost::asio::ip::tcp::socket> socket(io_context, ssl_context);
+		boost::asio::connect(socket.next_layer(), endpoint);
+		socket.handshake(wintls::handshake_type::client);
+#else
 		boost::asio::ssl::context ssl_context(boost::asio::ssl::context::tlsv12_client);
 		ssl_context.set_verify_mode(boost::asio::ssl::verify_peer);
-#ifdef _WIN32
-		// use windows cert store for openssl
-		HCERTSTORE hStore;
-		PCCERT_CONTEXT pContext = NULL;
-		X509* x509;
-		X509_STORE* store = SSL_CTX_get_cert_store(ssl_context.native_handle());
-
-		hStore = CertOpenSystemStore(NULL, L"ROOT");
-
-		if (hStore)
-		{
-			while (pContext = CertEnumCertificatesInStore(hStore, pContext))
-			{
-				x509 = NULL;
-				const unsigned char* encoded_cert = pContext->pbCertEncoded;
-				x509 = d2i_X509(NULL, (const unsigned char**)&encoded_cert, pContext->cbCertEncoded);
-				if (x509)
-				{
-					int i = X509_STORE_add_cert(store, x509);
-					X509_free(x509);
-				}
-			}
-
-			CertFreeCertificateContext(pContext);
-			CertCloseStore(hStore, 0);
-		}
-#elif defined(__APPLE__)
+#if defined(__APPLE__)
 		CFMutableDictionaryRef search;
 		CFArrayRef result;
 		SecKeychainRef keychain;
@@ -299,6 +264,7 @@ bool fetch_file(boost::filesystem::path outputpath, std::string uri, const Fetch
 		}		
 		boost::beast::get_lowest_layer(socket).connect(endpoint);
 		socket.handshake(boost::asio::ssl::stream_base::client);
+#endif
 		http::write(socket, req);
 		boost::system::error_code ec;
 		parser.get().body().open(outputpath.string().c_str(), boost::beast::file_mode::write, ec);

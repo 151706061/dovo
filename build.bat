@@ -13,11 +13,8 @@ SET GITHUBURL=https://github.com
 SET BUILD_DIR=%CD%
 SET DEVSPACE=%CD%
 SET CL=/MP
-SET BOOSTTOOLSET=toolset=msvc
 
 SET GENERATOR=-G "Visual Studio 17 2022" -A x64
-SET OPENSSLFLAG=VC-WIN64A
-SET BOOSTADDRESSMODEL=address-model=64
 
 cd %DEVSPACE%
 git clone --branch=master --single-branch --depth=1 %GITHUBURL%/madler/zlib.git
@@ -27,7 +24,7 @@ cd build-%TYPE%
 cmake.exe .. %GENERATOR% -DCMAKE_C_FLAGS_RELEASE="/MT /O2" -DCMAKE_C_FLAGS_DEBUG="/MTd /Od" -DCMAKE_INSTALL_PREFIX=%DEVSPACE%\zlib\%TYPE%
 msbuild /P:Configuration=%TYPE% INSTALL.vcxproj
 if ERRORLEVEL 1 exit /B %ERRORLEVEL%
-IF "%TYPE%" == "Release" copy /Y %DEVSPACE%\zlib\Release\lib\zlibstatic.lib %DEVSPACE%\zlib\Release\lib\zlib_o.lib
+IF "%TYPE%" == "Release" copy /Y %DEVSPACE%\zlib\Release\lib\zs.lib %DEVSPACE%\zlib\Release\lib\zlib_o.lib
 IF "%TYPE%" == "Debug"   copy /Y %DEVSPACE%\zlib\Debug\lib\zlibstaticd.lib %DEVSPACE%\zlib\Debug\lib\zlib_d.lib
 
 cd %DEVSPACE%
@@ -41,20 +38,6 @@ if ERRORLEVEL 1 exit /B %ERRORLEVEL%
 IF "%TYPE%" == "Debug"   copy /Y %DEVSPACE%\libiconv\Debug\lib\libiconv.lib %DEVSPACE%\libiconv\Debug\lib\libiconv_o.lib
 IF "%TYPE%" == "Debug"   copy /Y %DEVSPACE%\libiconv\Debug\lib\libiconv.lib %DEVSPACE%\libiconv\Debug\lib\libiconv_d.lib
 IF "%TYPE%" == "Release" copy /Y %DEVSPACE%\libiconv\Release\lib\libiconv.lib %DEVSPACE%\libiconv\Release\lib\libiconv_o.lib
-
-if DEFINED FORCEBUILD goto buildssl
-if EXIST "%DEVSPACE%\openssl\%TYPE%\lib\libcrypto.lib" goto dontbuildssl
-:buildssl
-cd %DEVSPACE%
-git clone %GITHUBURL%/openssl/openssl.git --branch OpenSSL_1_1_1-stable --single-branch --depth 1
-cd openssl
-SET OLDPATH=%PATH%
-IF "%TYPE%" == "Release" perl Configure -D_CRT_SECURE_NO_WARNINGS=1 no-asm no-shared --openssldir=%DEVSPACE%\openssl\Release --prefix=%DEVSPACE%\openssl\Release %OPENSSLFLAG%
-IF "%TYPE%" == "Debug"   perl Configure -D_CRT_SECURE_NO_WARNINGS=1 no-asm no-shared --openssldir=%DEVSPACE%\openssl\Debug --prefix=%DEVSPACE%\openssl\Debug %OPENSSLFLAG%
-nmake install
-SET PATH=%OLDPATH%
-:dontbuildssl
-SET OPENSSL_ROOT_DIR=%DEVSPACE%\openssl\%TYPE%
 
 cd %DEVSPACE%
 git clone --branch=DCMTK-3.6.5 %GITHUBURL%/DCMTK/dcmtk.git
@@ -84,11 +67,14 @@ msbuild /P:Configuration=%TYPE% INSTALL.vcxproj
 if ERRORLEVEL 1 exit /B %ERRORLEVEL%
 
 cd %DEVSPACE%
-git clone --branch=boost-1.81.0 --recurse-submodules %GITHUBURL%/boostorg/boost.git
+git clone --branch=boost-1.88.0 --recurse-submodules %GITHUBURL%/boostorg/boost.git
 cd boost
 call bootstrap
+SET BOOSTTOOLSET=toolset=msvc
+SET BOOSTADDRESSMODEL=address-model=64
 SET COMMONb2Flag=%BOOSTTOOLSET% %BOOSTADDRESSMODEL% runtime-link=static define=_BIND_TO_CURRENT_VCLIBS_VERSION=1 -j 4 stage
 SET BOOSTmodules=--with-locale --with-atomic --with-thread --with-filesystem --with-system --with-date_time --with-regex
+SET BOOST_ROOT=%DEVSPACE%\boost
 IF "%TYPE%" == "Release" b2 %COMMONb2Flag% %BOOSTmodules% release
 IF "%TYPE%" == "Debug"   b2 %COMMONb2Flag% %BOOSTmodules% debug
 
@@ -102,6 +88,9 @@ powershell "gci . *.vcxproj -recurse | ForEach { (Get-Content $_.FullName | ForE
 powershell "gci . *.vcxproj -recurse | ForEach { (Get-Content $_.FullName | ForEach {$_ -replace 'MultiThreadedDLL', 'MultiThreaded'}) | Set-Content $_.FullName }"
 msbuild /P:Configuration=%TYPE% INSTALL.vcxproj
 if ERRORLEVEL 1 exit /B %ERRORLEVEL%
+
+cd %DEVSPACE%
+git clone https://github.com/laudrup/boost-wintls.git
 
 cd %BUILD_DIR%
 mkdir build-%TYPE%

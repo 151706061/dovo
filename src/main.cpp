@@ -17,7 +17,9 @@
 #include <boost/filesystem.hpp>
 #include "dovo_about.h"
 #include "dcm2img.h"
+#ifndef _WIN32
 #include <boost/asio/ssl.hpp>
+#endif
 
 class MyApp: public wxApp
 {
@@ -52,7 +54,10 @@ bool MyApp::OnInit()
 	wxConfig::Get()->SetVendorName("FrontMotion");
 
 	boost::filesystem::path::codecvt();  // ensure VC++ does not race during initialization.
+
+#ifndef _WIN32
 	boost::asio::ssl::detail::openssl_init<> _openssl_init;
+#endif
 
 	// check for update in background and save result for next run
 	updater = boost::thread(&updateChecker);
