@@ -21,7 +21,7 @@ git clone --branch=master --single-branch --depth=1 %GITHUBURL%/madler/zlib.git
 cd zlib
 mkdir build-%TYPE%
 cd build-%TYPE%
-cmake.exe .. %GENERATOR% -DCMAKE_C_FLAGS_RELEASE="/MT /O2" -DCMAKE_C_FLAGS_DEBUG="/MTd /Od" -DCMAKE_INSTALL_PREFIX=%DEVSPACE%\zlib\%TYPE%
+cmake.exe .. %GENERATOR% -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded$<$<CONFIG:Debug>:Debug>" -DCMAKE_INSTALL_PREFIX=%DEVSPACE%\zlib\%TYPE%
 msbuild /P:Configuration=%TYPE% INSTALL.vcxproj
 if ERRORLEVEL 1 exit /B %ERRORLEVEL%
 IF "%TYPE%" == "Release" copy /Y %DEVSPACE%\zlib\Release\lib\zs.lib %DEVSPACE%\zlib\Release\lib\zlib_o.lib
@@ -77,6 +77,7 @@ SET BOOSTmodules=--with-locale --with-atomic --with-thread --with-filesystem --w
 SET BOOST_ROOT=%DEVSPACE%\boost
 IF "%TYPE%" == "Release" b2 %COMMONb2Flag% %BOOSTmodules% release
 IF "%TYPE%" == "Debug"   b2 %COMMONb2Flag% %BOOSTmodules% debug
+b2 headers
 
 cd %DEVSPACE%
 git clone --branch=3.2.2-hotfix --recurse-submodule %GITHUBURL%/wxWidgets/wxWidgets.git
@@ -95,7 +96,7 @@ git clone https://github.com/laudrup/boost-wintls.git
 cd %BUILD_DIR%
 mkdir build-%TYPE%
 cd build-%TYPE%
-cmake .. %GENERATOR% -DwxWidgets_ROOT_DIR=%DEVSPACE%\wxWidgets\%TYPE% -DBoost_ROOT=%DEVSPACE%\boost -DDCMTK_ROOT=%DEVSPACE%\dcmtk\%TYPE% -DZLIB_ROOT=%DEVSPACE%\zlib\%TYPE% -Dfmjpeg2k_ROOT=%DEVSPACE%\fmjpeg2koj\%TYPE% -DOpenJPEG_ROOT=%DEVSPACE%\openjpeg\%TYPE% -DOPENSSL_ROOT_DIR=%OPENSSL_ROOT_DIR% -DVLD="C:\Program Files (x86)\Visual Leak Detector"
+cmake .. %GENERATOR% -DwxWidgets_ROOT_DIR=%DEVSPACE%\wxWidgets\%TYPE% -DBoost_ROOT=%DEVSPACE%\boost -DDCMTK_ROOT=%DEVSPACE%\dcmtk\%TYPE% -DZLIB_ROOT=%DEVSPACE%\zlib\%TYPE% -Dfmjpeg2k_ROOT=%DEVSPACE%\fmjpeg2koj\%TYPE% -DOpenJPEG_ROOT=%DEVSPACE%\openjpeg\%TYPE%
 msbuild /P:Configuration=%TYPE% ALL_BUILD.vcxproj
 if ERRORLEVEL 1 exit /B %ERRORLEVEL%
 
